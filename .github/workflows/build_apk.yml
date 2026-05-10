@@ -4,19 +4,29 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  build-android:
+    runs-on: macos-latest
+    permissions:
+      contents: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: master        # 你的 Fork 默认分支
 
-      - name: Setup Flutter
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: "17"
+          cache: "gradle"
+
+      - name: Flutter action
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.32.0'
+          flutter-version: '3.22.x'   # 原作者指定的版本
+          cache: true
 
-      - name: Install dependencies
+      - name: Restore packages
         run: |
           cd simple_live_app
           flutter pub get
@@ -29,5 +39,8 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: simple-live-apk
-          path: simple_live_app/build/app/outputs/flutter-apk/*.apk
+          name: android
+          path: |
+            simple_live_app/build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            simple_live_app/build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            simple_live_app/build/app/outputs/flutter-apk/app-x86_64-release.apk
